@@ -4,9 +4,8 @@ const http = require('http');
 const server = http.createServer(app);
 
 
-app.get('/hello',(req,res)=>{
-    console.log('sample endpoint');
-})
+
+
 
 
 
