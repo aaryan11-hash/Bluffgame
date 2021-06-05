@@ -4,22 +4,44 @@ const mongoClient = require('../DatabaseConfig/Mongoose');
 const uuid = require('uuid');
 
 
-const createNewSessionObj =  function(userName){
-   
+const createNewSession =  function(userName){
+  
     const sessionId = Math.random().toString(16).substr(2,36-userName.toString().length)+userName;
-    //sessionId = sessionId.splice(sessionId.toString().length-username.length)+username;
-    const gameSessionOnj = { gameSessionId : sessionId,
+    
+    const gameSessionObj = new gameSessionDto({ gameSessionId : sessionId,
         adminDetails : {userName : userName},
-        playerList : [{userName : userName}] 
-    };
+        player : {userName : ''} 
+    });
 
-    const savedEntity = gameSessionDto.create(gameSessionOnj);
-    console.log(sessionId);
+    const savedEntity =  gameSessionDto.create(gameSessionObj);
+
 
     return savedEntity;
-}
-  
+};
+
+const joinCreatedSession = async function(joinSessionDetails) {
+    
+    
+    
+    // gameSessionDto.updateOne({gameSessionId:joinSessionDetails.gameSessionId},
+    //                                             {player:{userName:joinSessionDetails.userName}},
+    //                                             {new : true,
+    //                                             runValidators : true,
+    //                                             useFindAndModify:false}
+    //             ,(err,numAffected)=>{
+    //                 if(err) console.log(err);
+    //                 console.log('numAffected ',numAffected.length);
+    //             });
+                
+    const gameSessionObj = await gameSessionDto.findOne({gameSessionId : joinSessionDetails.sessionId});                                              
+    const update ={ player:{userName:joinSessionDetails.userName}};
+    await gameSessionObj.updateOne(update);
+
+    const finalSession = await gameSessionDto.findOne({gameSessionId : joinSessionDetails.sessionId})
+    return finalSession;
+};
 
 
 
-module.exports = createNewSessionObj;
+module.exports.createNewSession = createNewSession;
+module.exports.joinCreatedSession = joinCreatedSession;

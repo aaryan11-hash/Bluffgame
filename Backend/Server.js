@@ -3,7 +3,8 @@ const app = express();
 const http = require('http');
 const server = http.createServer(app);
 const cors = require('cors');
-const createNewSessionObj = require('./Services/SocketOpServices');
+const {createNewSession,joinCreatedSession} = require('./Services/SocketOpServices');
+
 //const socketOpService = require('./Services/SocketOpServices');
 app.use(cors());
 
@@ -26,7 +27,9 @@ io.on('connection',(socket)=>{
 
     socket.on('create-session',(userName)=>{
         console.log('create request username: ',userName);
-        createNewSessionObj(userName).then(savedEntity=>{
+        
+        createNewSession(userName).then(savedEntity=>{
+           
             socket.emit('created-session-event',savedEntity);
         });
         /*this part of the code will generate a sessionId and the repective objects that will be stored in the db as session object data*/ 
@@ -46,12 +49,18 @@ io.on('connection',(socket)=>{
             }
         *///this event trigger is for sending data about the state when certain number of user have already joined 
          //the session and we need to provide that data to the newly joined user.
-        socket.emit('session-join-meta-data'+data.sessionId,{'message':'the expected object will come in this....'});
         
-        socket.broadcast.emit('newUser-joined-session'+data.sessionId,{...data,message:'new member joined'});
-       
-      
+         joinCreatedSession(data).then((gameSessionObj)=>{
+            socket.emit('session-join-meta-data'+data.sessionId,gameSessionObj);
+            socket.broadcast.emit('newUser-joined-session'+data.sessionId,gameSessionObj);
+        })
+        
     });
+
+    socket.on('start-game',(sessionId)=>{
+        console.log(sessionId);
+        socket.broadcast.emit('start-game-trigger'+sessionId,{message : 'start'});
+    })
 
     socket.on('send-lobby-data'+sessionId,(hashMap)=>{
         socket.broadcast.emit('receive-lobby-data'+sessionId,hashMap);

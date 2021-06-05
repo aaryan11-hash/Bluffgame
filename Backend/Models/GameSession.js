@@ -3,12 +3,12 @@ const playerDto = require('mongoose');
 
 const GameSession = mongooseClient.Schema({
     gameSessionId : String,
-    adminDetails : {},
-    playerList : [],
+    adminDetails : {userName : String},
+    player : {userName : String},
 
 });
 
-const gameSessionDto = mongooseClient.models['gameSession'] || mongooseClient.model('gameSession',GameSession);
+const gameSessionDto =  mongooseClient.model('gameSession2',GameSession);
 
 module.exports = gameSessionDto;
 
